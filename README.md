@@ -1,0 +1,2 @@
+# Pasyans-Pyramida
+Пасьянс Піраміда
