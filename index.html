@@ -1,33 +1,200 @@
 <!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
-	<title>Пасьянс "Піраміда"</title>
-	<link rel="stylesheet" type="text/css" href="style.css">
-	
-	
-</head>
-<body>
-<div id="shapka">
-	<h1>Пасьянс "Піраміда"</h1>
-	
-</div>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- <link rel="stylesheet" type="text/css" href="css/style.css"> -->
 
+    <title>Пасьянс "Піраміда"</title>
+    <style>
+      * {
+        font-family: Arial;
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
 
-<div id="game"></div> 	<!-- Ігрове поле -->
+      .game {
+        display: flex;
+        justify-content: center;
+        margin: 0;
+        padding: 0;
+      }
+      #canvas {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      }
 
+      .sensor {
+        /*position: fixed;*/
+        /*top: 0;*/
+        width: 100%;
+        height: 100px;
+        z-index: 300;
+        border: 1px solid #145113;
+        background-color: rgba(0, 0, 0, 0.3);
+      }
 
-<div id="footer">           <!-- Підвал -->
-	<!-- <div>
-		<ul class="menu">
-			 <li>Нова гра</li>
-			 <li>Налаштування</li>
-			 <li>Очки:</li>
-		</ul>	
-	</div> -->
-	<button id="new-game">Нова гра</button>
-	<div id="clock">00:00:00</div>
-</div>
-<script src="script.js"></script>
-</body>
+      h1 {
+        font-size: 26px;
+        text-align: center;
+        margin: 4px;
+        padding: 0px;
+      }
+
+      h2 {
+        font-size: 18px;
+        text-align: left;
+        margin: 4px;
+        padding: 0px;
+      }
+
+      p {
+        font-size: 14px;
+        margin: 8px;
+        padding: 0px;
+      }
+
+      .b-popup {
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        position: fixed;
+        top: 0px;
+        z-index: 500;
+      }
+      .b-popup .b-popup-content {
+        margin: 60px auto 0px auto;
+        width: 90%;
+        max-width: 600px;
+        /*height: 40px;*/
+        padding: 6px;
+        background-color: rgba(100, 150, 100, 0.8);
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px #000;
+      }
+
+      #close {
+        margin: 0 auto;
+      }
+
+      .help-close {
+        display: flex;
+        margin: 0 auto;
+      }
+
+      .help-none {
+        display: none;
+      }
+
+      .help-block {
+        display: block;
+      }
+
+      .help-start {
+        top: 5px;
+      }
+
+      .nav {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        top: 5px;
+        z-index: 500;
+      }
+
+      .game_btn {
+        background: linear-gradient(to bottom, #4a8751 0%, #417b40 100%);
+        color: #000;
+        font-size: 14px;
+        text-shadow: 0 1px 0 #757575;
+        padding: 4px 0 5px 0;
+        margin: 2px;
+        cursor: pointer;
+        border: 0;
+        border-top: 1px solid #145113;
+        border-right: 1px solid #145113;
+        border-left: 1px solid #145113;
+        border-bottom: 1px solid #145113;
+        /*box-shadow: 0 -1px 0 #0e780c, 0 1px 0 #000;*/
+        width: 120px;
+        border-radius: 2px;
+      }
+    </style>
+  </head>
+  <body
+    style="background: #34793c url('img/fon.png'); color: #ffffff; margin: 0px"
+  >
+    <div class="game">
+      <div>
+        <canvas
+          id="canvas"
+          style="width: 100%; max-width: 740px; z-index: 100"
+        ></canvas>
+        <!-- <div id="sensor" class="sensor"></div> -->
+      </div>
+    </div>
+
+    <div class="nav">
+      <div class="help-start">
+        <button id="help-start" class="game_btn">Help</button>
+      </div>
+      <div class="help-start">
+        <button id="new-game" class="game_btn">New Game</button>
+      </div>
+      <div class="help-start">
+        <button
+          id="share-game"
+          class="game_btn"
+          onclick="TelegramGameProxy.shareScore()"
+        >
+          Share
+        </button>
+      </div>
+    </div>
+
+    <div id="help" class="help-none">
+      <div class="b-popup">
+        <div class="b-popup-content">
+          <div class="">
+            <h1>Пасьянс Піраміда</h1>
+            <h2>Мета гри</h2>
+
+            <p>Видалити з піраміди всі карти, сума очок яких складає 13.</p>
+
+            <h2>Правила</h2>
+
+            <p>
+              28 карт викладаються в 7 рядів у формі піраміди. Решта карти
+              складають резервну колоду, яка кладеться сорочкою вгору. Гральними
+              картами є нижні не прикриті карти піраміди і верхня карта
+              резервної колоди. З гральних карт вибираються всі королі і всі
+              пари карт, які в сумі складають 13, наприклад: туз-дама, 2 і
+              валет, 6 і 7.
+            </p>
+
+            <p>
+              Очки: 1 очко - Туз, 11 очок - Валет, 12 очок - Дама, 13 очок -
+              Король.
+            </p>
+
+            <p>
+              Коли всі можливості вичерпані, можна починати перегортати резервну
+              колоду. Пасьянс зійшовся, якщо всі карти вдалося розібрати
+              попарно.
+            </p>
+            <div class="help-close">
+              <button id="close" class="game_btn">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="https://telegram.org/js/games.js"></script>
+  </body>
 </html>
